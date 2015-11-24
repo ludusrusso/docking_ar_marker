@@ -6,14 +6,17 @@ from ar_pose.msg import ARMarker
 
 pub_vel = None
 
-def marker_cb(data):
-    kx = -0.5
-    kt = -0.5
-    cmd_vel = Twist()
-    cmd_vel.linear.x = -kx*data.pose.pose.position.z
-    cmd_vel.angular.z = -kt*data.pose.pose.position.y
+vx = 0
+vt = 0
+mvt = 0
+mvx = 0
 
-    pub_vel.publish(cmd_vel)
+def marker_cb(data):
+    kx = -0.05
+    kt = -0.5
+    l = 0.9
+    mvx = kx*data.pose.pose.position.z
+    mvt = kt*data.pose.pose.position.x
 
 
 
@@ -21,11 +24,21 @@ def listener():
     global pub_vel
 
     rospy.init_node('docker', anonymous=True)
-    pub_vel = rospy.Publisher('/kobra/locomotion_cmd_vel', Twist, queue_size=10)
+    pub_vel = rospy.Publisher('/kobra/cmd_vel', Twist, queue_size=10)
 
     rospy.Subscriber("/ar_pose_marker", ARMarker, marker_cb)
+    rate = rospy.Rate(10)
+    while not rospy.is_shutdown():
+        vx = l*vx + mvx
+        vt = l*vt + mvt
+        mvt = 0
+        mvx = 0
+        cmd_vel = Twist()
+        cmd_vel.linear.x = vx
+        cmd_vel.angular.z = vt
 
-    rospy.spin()
+        rate.sleep()
 
+        
 if __name__ == '__main__':
     listener()
