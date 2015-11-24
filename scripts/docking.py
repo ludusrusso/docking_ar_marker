@@ -10,11 +10,12 @@ vx = 0
 vt = 0
 mvt = 0
 mvx = 0
+l = 0.9
+
 
 def marker_cb(data):
     kx = -0.05
     kt = -0.5
-    l = 0.9
     mvx = kx*data.pose.pose.position.z
     mvt = kt*data.pose.pose.position.x
 
@@ -39,6 +40,6 @@ def listener():
 
         rate.sleep()
 
-        
+
 if __name__ == '__main__':
     listener()
